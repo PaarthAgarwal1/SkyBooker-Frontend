@@ -1,0 +1,69 @@
+# Project Architecture & Folder Structure
+
+This project follows a **Feature-Based Architecture**, designed for scalability, maintainability, and clear separation of concerns. Below is a detailed breakdown of the folders and their roles.
+
+## Root Directory Structure
+
+The root contains configuration files for the build system, styling, and development environment.
+
+| File/Folder | Purpose |
+| :--- | :--- |
+| `src/` | Contains the entire application source code. |
+| `public/` | Static assets that are served as-is (e.g., symbols, favicons). |
+| [index.html](file:///d:/OFC_Frontend_V2/ofc-frontend/index.html) | The entry point HTML file where the React app is mounted. |
+| [package.json](file:///d:/OFC_Frontend_V2/ofc-frontend/package.json) | Project dependencies, scripts, and metadata. |
+| [vite.config.ts](file:///d:/OFC_Frontend_V2/ofc-frontend/vite.config.ts) | Configuration for Vite (build tool), including path aliases (e.g., `@shared`). |
+| [tailwind.config.ts](file:///d:/OFC_Frontend_V2/ofc-frontend/tailwind.config.ts) | Design system configuration (colors, spacing, themes). |
+| [tsconfig.json](file:///d:/OFC_Frontend_V2/ofc-frontend/tsconfig.json) | TypeScript configuration and path mapping. |
+| [Dockerfile](file:///d:/OFC_Frontend_V2/ofc-frontend/Dockerfile) | Instructions for containerizing the application. |
+| [nginx.conf](file:///d:/OFC_Frontend_V2/ofc-frontend/nginx.conf) | Web server configuration for production deployment. |
+
+---
+
+## The `src` Directory
+
+The `src` folder is the heart of the application, organized into logical layers.
+
+### 1. `src/app/`
+- **Purpose**: App-level configuration and the main entry point.
+- **Contents**: `main.tsx` (renders the React root) and `App.tsx` (main router and provider setup).
+- **Connection**: Imports from `src/features` to render specific pages and `src/shared` for global providers.
+
+### 2. `src/features/`
+- **Purpose**: Contains modular, self-contained business features (e.g., `auth`, `whiteboard`, `batches`).
+- **Standard Modular Pattern**:
+    - `components/`: UI pieces specific to this feature.
+    - `hooks/`: Business logic and data fetching logic (e.g., `useWhiteboard`).
+    - `constants.ts`: Types, interfaces, and static data for the feature.
+    - `FeatureName.tsx`: The main "orchestrator" component that connects everything.
+- **Connection**: Features use `src/shared` for common UI components and `src/store` for global state.
+
+### 3. `src/shared/`
+- **Purpose**: Reusable resources used across multiple features.
+- **Subfolders**:
+    - `components/ui/`: Atomic UI components (mostly shadcn/ui like buttons, inputs).
+    - `api/`: Global API client configuration and shared endpoints.
+    - `hooks/`: Generic hooks like `use-toast` or `use-debounce`.
+    - `utils/`: Helper functions (formatting, validation).
+    - `types/`: Global TypeScript interfaces.
+- **Connection**: Imported by nearly every file in `src/features`.
+
+### 4. `src/store/`
+- **Purpose**: Global state management using Redux Toolkit.
+- **Contents**: [store.ts](file:///d:/OFC_Frontend_V2/ofc-frontend/src/store/store.ts) (store configuration), `slices/` (state logic for specific domains), and `hooks.ts` (typed `useAppSelector` and `useAppDispatch`).
+- **Connection**: Features connect to the store to read or update global data (e.g., user info, notifications).
+
+---
+
+## How Folders Are Connected (Data Flow)
+
+1.  **Entry**: `main.tsx` → `App.tsx` (Setup Providers & Routing).
+2.  **Navigation**: Router directs users to a **Feature** (e.g., `src/features/whiteboard/Whiteboard.tsx`).
+3.  **Logic**: The feature component uses a **Feature Hook** to fetch data via **Shared API** clients.
+4.  **UI**: The feature renders **Shared Components** (buttons/cards) and **Feature Components** (specialized views).
+5.  **State**: If data needs to persist across pages, the feature dispatches an action to the **Store**.
+
+---
+
+## Summary of Feature-Based Architecture
+This modular approach ensures that when you work on a feature (like `whiteboard`), everything related to it is "nearby," reducing the need to jump across the entire codebase. Reusable parts are "pulled down" into `shared`, keeping the features clean and focused.
